@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Animated, TouchableOpacity } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Easing, TouchableOpacity } from 'react-native';
 import styled from 'styled-components/native';
 // npm install @types/styled-components @types/styled-components-react-native
 
@@ -17,21 +17,20 @@ const Box = styled.View`
 const AnimatedBox = Animated.createAnimatedComponent(Box);
 
 export default function App() {
-  const Y = new Animated.Value(0);
-  const moveUp = () => {
-    // Animated.timing(Y, {
-    //   toValue: 200,
-    //   useNativeDriver: true
-    // }).start();
-    Animated.spring(Y, {
-      toValue: 200,
-      useNativeDriver: true,
-      bounciness:30
-    }).start();
-  }
+  const Y = useRef(new Animated.Value(0)).current;
+  // useRef는 lifeTime동안 object를 지속시켜 준다.
+  // 렌더링 시 값이 초기화되는 것을 막아준다.
+  const [up, setUp] = useState(false);
 
-  // Y의 값을 보고 싶다면
-  // Y.addListener(()=> {console.log(Y)});
+  const toggleUp = () => setUp(prev => !prev);
+
+  const moveUp = () => {
+    Animated.timing(Y, {
+      toValue: up? 200 : -200,
+      useNativeDriver: true,
+      easing: Easing.circle
+    }).start(toggleUp); // end될 때의 콜백함수
+  }
 
   return (
     <Container>
