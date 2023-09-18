@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Dimensions, Easing, Pressable, TouchableOpacity } from 'react-native';
+import React, {useRef } from 'react';
+import { Animated, PanResponder} from 'react-native';
 import styled from 'styled-components/native';
 // npm install @types/styled-components @types/styled-components-react-native
 
@@ -15,56 +15,24 @@ const Box = styled.View`
 `;
 
 const AnimatedBox = Animated.createAnimatedComponent(Box);
-const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = Dimensions.get("window");
 
 export default function App() {
-  const POSITION = useRef(new Animated.ValueXY({x: -SCREEN_WIDTH / 2 + 100, y: -SCREEN_HEIGHT / 2 + 100})).current;
+  const POSITION = useRef(
+    new Animated.ValueXY({
+      x: 0,
+      y: 0
+  })).current;
+
+  const panResponder = useRef(PanResponder.create({
+    onStartShouldSetPanResponder: () => true, // 터치, 드래그 등 프래스 이벤트를 set해준다는 의미
+    onPanResponderMove: (_,{dx, dy}) => {
+      POSITION.setValue({ // POSITION = {x,y} 이거 안됨.
+        x: dx,
+        y: dy
+      })
+    }
+  })).current
   
-  const topLeft = Animated.timing(POSITION, {
-    toValue: {
-      x: -SCREEN_WIDTH / 2 + 100,
-      y: -SCREEN_HEIGHT / 2 + 100
-    },
-    useNativeDriver: true
-  });
-
-  const bottomLeft = Animated.timing(POSITION, {
-    toValue: {
-      x: -SCREEN_WIDTH / 2 + 100,
-      y: SCREEN_HEIGHT / 2 - 100
-    },
-    useNativeDriver: true
-  });
-
-  const topRight = Animated.timing(POSITION, {
-    toValue: {
-      x: SCREEN_WIDTH / 2 - 100,
-      y: -SCREEN_HEIGHT / 2 + 100
-    },
-    useNativeDriver: true
-  });
-
-  const bottomRight = Animated.timing(POSITION, {
-    toValue: {
-      x: SCREEN_WIDTH / 2 - 100,
-      y: SCREEN_HEIGHT / 2 - 100
-    },
-    useNativeDriver: true
-  });
-
-  const moveUp = () => {
-    Animated.loop(
-      Animated.sequence([
-        bottomLeft,bottomRight,topRight, topLeft
-      ])
-    ).start();
-    
-  }
-  const rotateY = POSITION.y.interpolate({
-    inputRange: [-300, 300],
-    outputRange: ["-360deg", "360deg"]
-  })
-
   const borderRadius = POSITION.y.interpolate({
     inputRange: [-300, 300], // 대상에서 어떤 값을 갖고 올 것인지 정의
     outputRange : [100, 0]
@@ -77,11 +45,10 @@ export default function App() {
 
   return (
     <Container>
-      <Pressable onPress={moveUp}>
         <AnimatedBox
+          {...panResponder.panHandlers}
           style={{transform: [...POSITION.getTranslateTransform()], borderRadius, backgroundColor: bgColor}}
         />
-      </Pressable>
       
     </Container>
   );
