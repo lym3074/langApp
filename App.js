@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Animated } from 'react-native';
 import styled from 'styled-components/native';
 // npm install @types/styled-components @types/styled-components-react-native
 
@@ -11,30 +12,22 @@ const Box = styled.TouchableOpacity`
   background-color: tomato;
   width: 200px;
   height: 200px;
-`
+`;
+
+const AnimatedBox = Animated.createAnimatedComponent(Box);
 
 export default function App() {
-  const [y, setY] = useState(0);
-  const [intervalID, setIntervalID] = useState(0);
-  const moveUp = () => {
-    const id = setInterval(() => {
-      setY(prev => prev + 1);
-    }, 5);
-
-    setIntervalID(id);
-  };
-
-  useEffect(()=> {
-    if(y >= 200) {
-      clearInterval(intervalID);
-    }
-  },[y, intervalID])
+  const Y = new Animated.Value(0);
+  const moveUp = () => {}
 
   return (
     <Container>
-      <Box style={{
-        transform: [{translateY: y}]
-      }} onPress={moveUp}></Box>
+      <AnimatedBox style={{
+        transform: [{translateY: Y}]
+      }} onPress={moveUp}></AnimatedBox>
     </Container>
   );
 }
+
+// note)
+// - 다른 컴포넌트를 anitation 컴포로 만들고 싶으면 createAnimatedComponent()를 사용한다.
