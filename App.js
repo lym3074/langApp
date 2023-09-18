@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Pressable, TouchableOpacity } from 'react-native';
+import { Animated, Dimensions, Easing, Pressable, TouchableOpacity } from 'react-native';
 import styled from 'styled-components/native';
 // npm install @types/styled-components @types/styled-components-react-native
 
@@ -15,21 +15,50 @@ const Box = styled.View`
 `;
 
 const AnimatedBox = Animated.createAnimatedComponent(Box);
+const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = Dimensions.get("window");
 
 export default function App() {
-  const POSITION = useRef(new Animated.ValueXY({x: 0, y: 300})).current;
-  // useRef는 lifeTime동안 object를 지속시켜 준다.
-  // 렌더링 시 값이 초기화되는 것을 막아준다.
-  const [up, setUp] = useState(false);
+  const POSITION = useRef(new Animated.ValueXY({x: -SCREEN_WIDTH / 2 + 100, y: -SCREEN_HEIGHT / 2 + 100})).current;
+  
+  const topLeft = Animated.timing(POSITION, {
+    toValue: {
+      x: -SCREEN_WIDTH / 2 + 100,
+      y: -SCREEN_HEIGHT / 2 + 100
+    },
+    useNativeDriver: true
+  });
 
-  const toggleUp = () => setUp(prev => !prev);
+  const bottomLeft = Animated.timing(POSITION, {
+    toValue: {
+      x: -SCREEN_WIDTH / 2 + 100,
+      y: SCREEN_HEIGHT / 2 - 100
+    },
+    useNativeDriver: true
+  });
+
+  const topRight = Animated.timing(POSITION, {
+    toValue: {
+      x: SCREEN_WIDTH / 2 - 100,
+      y: -SCREEN_HEIGHT / 2 + 100
+    },
+    useNativeDriver: true
+  });
+
+  const bottomRight = Animated.timing(POSITION, {
+    toValue: {
+      x: SCREEN_WIDTH / 2 - 100,
+      y: SCREEN_HEIGHT / 2 - 100
+    },
+    useNativeDriver: true
+  });
 
   const moveUp = () => {
-    Animated.timing(POSITION, {
-      toValue: up? 300 : -300,
-      useNativeDriver: true,
-      duration: 1000
-    }).start(toggleUp); // end될 때의 콜백함수
+    Animated.loop(
+      Animated.sequence([
+        bottomLeft,bottomRight,topRight, topLeft
+      ])
+    ).start();
+    
   }
   const rotateY = POSITION.y.interpolate({
     inputRange: [-300, 300],
@@ -50,7 +79,7 @@ export default function App() {
     <Container>
       <Pressable onPress={moveUp}>
         <AnimatedBox
-          style={{transform: [{rotateY},{translateY: POSITION.y}], borderRadius, backgroundColor: bgColor}}
+          style={{transform: [...POSITION.getTranslateTransform()], borderRadius, backgroundColor: bgColor}}
         />
       </Pressable>
       
@@ -67,3 +96,6 @@ export default function App() {
 // animated.timing() : 타이밍
 
 // interpolation : 보간 -> 중간값 추정
+
+// useRef는 lifeTime동안 object를 지속시켜 준다.
+// 렌더링 시 값이 초기화되는 것을 막아준다.
