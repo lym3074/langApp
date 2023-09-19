@@ -23,14 +23,21 @@ export default function App() {
       y: 0
   })).current;
 
-  const panResponder = useRef(PanResponder.create({
-    onStartShouldSetPanResponder: () => true, // 터치, 드래그 등 프래스 이벤트를 set해준다는 의미
-    onPanResponderMove: (_,{dx, dy}) => {
-      POSITION.setValue({ // POSITION = {x,y} 이거 안됨.
-        x: dx,
-        y: dy
-      })
-    }
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true, // 터치, 드래그 등 프래스 이벤트를 set해준다는 의미
+      onPanResponderMove: (_,{dx, dy}) => {
+        POSITION.setValue({ // POSITION = {x,y} 이거 안됨.
+          x: dx,
+          y: dy
+      })},
+      onPanResponderRelease: () => {
+        Animated.spring(POSITION, {
+          toValue: {x: 0, y: 0},
+          useNativeDriver: true,
+          bounciness: 10
+        }).start();
+      }
   })).current
   
   const borderRadius = POSITION.y.interpolate({
@@ -49,7 +56,6 @@ export default function App() {
           {...panResponder.panHandlers}
           style={{transform: [...POSITION.getTranslateTransform()], borderRadius, backgroundColor: bgColor}}
         />
-      
     </Container>
   );
 }
@@ -62,7 +68,7 @@ export default function App() {
 // animated.spring() : 물리 모델 제공
 // animated.timing() : 타이밍
 
-// interpolation : 보간 -> 중간값 추정
+// interpolation : 보간 -> 중간값 추정 두 사이의 값
 
 // useRef는 lifeTime동안 object를 지속시켜 준다.
 // 렌더링 시 값이 초기화되는 것을 막아준다.
