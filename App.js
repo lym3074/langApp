@@ -22,28 +22,15 @@ const Card = styled(Animated.createAnimatedComponent(View))`
 `;
 
 export default function App() {
-  
-  const panResponder = useRef(PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onPanResponderGrant: () => {
-      onPressIn();
-    },
-    onPanResponderMove: (_,{dx}) => {
-      position.setValue(dx)
-    },
-    onPanResponderRelease: () => {
-      Animated.parallel([
-        onPressOut,
-        Animated.spring(position, {
-          toValue: 0,
-          useNativeDriver: true
-        })
-      ]).start();
-    }
-  })).current;
-
   const scale = useRef(new Animated.Value(1)).current;
   const position = useRef(new Animated.Value(0)).current;
+  const retation = position.interpolate({
+    inputRange: [-250, 250],
+    outputRange: ['-15deg', '15deg'],
+    
+    // extrapolate: "clamp" /** range 바깥으로 넘어갔을 때의 처리 clamp : 범위 내로 제한, extend: 무제한, identity: 지 맘대로 */ 
+  })
+
   const onPressIn = () => Animated.spring(scale, {
     toValue: 0.9,
     useNativeDriver: true
@@ -53,13 +40,38 @@ export default function App() {
     toValue: 1,
     useNativeDriver: true
   });
+  
+  const goCenter = Animated.spring(position, {
+    toValue: 0,
+    useNativeDriver: true
+  })
+  
+  const panResponder = useRef(PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onPanResponderGrant: () => {
+      onPressIn();
+    },
+    onPanResponderMove: (_,{dx}) => {
+      position.setValue(dx)
+    },
+    onPanResponderRelease: (_, {dx}) => {
+      if(dx < - 280) {
+        Animated.spring(position, {toValue: -400, useNativeDriver: true}).start();
+      } else if(dx > 280) {
+        Animated.spring(position, {toValue: 400, useNativeDriver: true}).start();
+      } else {
+        Animated.parallel([ onPressOut, goCenter]).start();
+      }
+      
+    }
+  })).current;
 
   return (
     <Container>
       <Card 
         {...panResponder.panHandlers}
         style={{
-          transform: [{scale: scale}, {translateX: position}]
+          transform: [{scale: scale}, {translateX: position}, {rotateZ: retation}]
         }}
       >
         <Ionicons name='pizza' color="#192a56" size={98}/>
