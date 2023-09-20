@@ -71,12 +71,16 @@ export default function App() {
   const goLeft = Animated.spring(position, {
       toValue: -500,
       useNativeDriver: true, 
-      tension: 5
+      tension: 5,
+      restSpeedThreshold: 100, // 속도 임계값
+      restDisplacementThreshold: 100 // 거리 임계값
   }); // tension은 낮아질 수록 느려진다.
   const goRight = Animated.spring(position,{
       toValue: 500,
       useNativeDriver: true, 
-      tension: 5
+      tension: 5,
+      restSpeedThreshold: 100, // 속도 임계값
+      restDisplacementThreshold: 100 // 거리 임계값
   });
   const panResponder = useRef(PanResponder.create({
     onStartShouldSetPanResponder: () => true,
