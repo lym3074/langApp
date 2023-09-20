@@ -1,7 +1,8 @@
-import React, {useRef } from 'react';
-import { Animated, PanResponder, View} from 'react-native';
+import React, {useRef, useState} from 'react';
+import { Animated, PanResponder, View, Text} from 'react-native';
 import styled from 'styled-components/native';
 import {Ionicons} from "@expo/vector-icons";
+import icons from './icons';
 // npm install @types/styled-components @types/styled-components-react-native
 
 const Container = styled.View`
@@ -13,8 +14,8 @@ const Container = styled.View`
 
 const Card = styled(Animated.createAnimatedComponent(View))`
   background-color:white;
-  width: 200px;
-  height: 200px;
+  width: 300px;
+  height: 300px;
   align-items: center;
   justify-content: center;
   border-radius: 12px;
@@ -67,8 +68,16 @@ export default function App() {
     useNativeDriver: true
   });
 
-  const goLeft = Animated.spring(position, {toValue: -400, useNativeDriver: true, tension: 5}); // tension은 낮아질 수록 느려진다.
-  const goRight = Animated.spring(position, {toValue: 400, useNativeDriver: true, tension: 5});
+  const goLeft = Animated.spring(position, {
+      toValue: -500,
+      useNativeDriver: true, 
+      tension: 5
+  }); // tension은 낮아질 수록 느려진다.
+  const goRight = Animated.spring(position,{
+      toValue: 500,
+      useNativeDriver: true, 
+      tension: 5
+  });
   const panResponder = useRef(PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onPanResponderGrant: () => {
@@ -79,29 +88,35 @@ export default function App() {
     },
     onPanResponderRelease: (_, {dx}) => {
       if(dx < - 250) {
-        goLeft.start();
+        goLeft.start(onDismiss);
       } else if(dx > 250) {
-        goRight.start();
+        goRight.start(onDismiss);
       } else {
         Animated.parallel([ onPressOut, goCenter]).start();
       }
-      
     }
   })).current;
 
-  const cancelPress = () => {
-    goLeft.start();
+  const [index, setIndex] = useState(0);
+  const onDismiss = () => {
+    scale.setValue(1);
+    position.setValue(0); // 애니메이션 이후 앞카드를 다시 중앙으로 뺀다.
+    setIndex(prevIndex => prevIndex+1)
   }
 
+  const cancelPress = () => {
+    goLeft.start(onDismiss);
+  };
+
   const checkPress = () => {
-    goRight.start();
-  }
+    goRight.start(onDismiss);
+  };
 
   return (
     <Container>
       <CardContainer>
         <Card style={{transform: [{scale: secondScale}]}}>
-          <Ionicons name='beer' color="#192a56" size={98}/>
+          <Ionicons name={icons[index + 1]} color="#192a56" size={98}/>
         </Card>
         <Card 
           {...panResponder.panHandlers}
@@ -109,7 +124,7 @@ export default function App() {
             transform: [{scale: scale}, {translateX: position}, {rotateZ: retation}]
           }}
         >
-          <Ionicons name='pizza' color="#192a56" size={98}/>
+          <Ionicons name={icons[index]} color="#192a56" size={98}/>
         </Card>
       </CardContainer>
       
@@ -121,12 +136,6 @@ export default function App() {
           <Ionicons name='checkmark-circle' color="white" size={45}/>
         </Button>
       </ButtonContainer>
-      
-      
-      
-      
-      
-      
     </Container>
   );
 }
