@@ -31,12 +31,14 @@ export default function App() {
           x: dx,
           y: dy
       })},
+      onPanResponderGrant: () => {
+        POSITION.setOffset({
+          x: POSITION.x._value,
+          y: POSITION.y._value
+        })
+      },
       onPanResponderRelease: () => {
-        Animated.spring(POSITION, {
-          toValue: {x: 0, y: 0},
-          useNativeDriver: true,
-          bounciness: 10
-        }).start();
+        POSITION.flattenOffset(); // offset을 0으로 만들면서 offset값을 POSITION에게 넘겨준다.
       }
   })).current
   
